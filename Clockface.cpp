@@ -12,16 +12,18 @@ byte lastHour = 24;
 
 unsigned long lastMillis = 0;
 
+const unsigned short MASK = 0xF81F;
 
-Clockface::Clockface(Display* display) {
+
+Clockface::Clockface(Adafruit_GFX* display) {
   _display = display;
 
   Locator::provide(display);
 }
 
-void Clockface::setup(DateTime *dateTime) {
+void Clockface::setup(CWDateTime *dateTime) {
   this->_dateTime = dateTime;
-  Locator::getDisplay()->setTextWrap(true, true);
+  Locator::getDisplay()->setTextWrap(true);
   Locator::getDisplay()->fillRect(0, 0, 64, 64, 0x0000);  
   updateMap();
 }
@@ -51,16 +53,34 @@ void Clockface::updateMap()
 
   if (h < 12) {
     int pos = BRAZIL_TZ + ((12 - h) * TZ_SIZE);
-    Locator::getDisplay()->croppedDraw(_WORLD_MAP, 0, 0, pos-32, 0, 32+(120-pos), 56, 120, 56);
+    croppedDraw(_WORLD_MAP, 0, 0, pos-32, 0, 32+(120-pos), 56, 120, 56);
     
-    Locator::getDisplay()->croppedDraw(_WORLD_MAP, 32+(120-pos), 0, 0, 0, 64 - (32+(120-pos)) , 56, 120, 56);
+    croppedDraw(_WORLD_MAP, 32+(120-pos), 0, 0, 0, 64 - (32+(120-pos)) , 56, 120, 56);
     
   } else {
     int pos = BRAZIL_TZ - ((h % 12) * TZ_SIZE);
-    Locator::getDisplay()->croppedDraw(_WORLD_MAP, 32-pos, 0, 0, 0, 64 - (32-pos), 56, 120, 56);
-    Locator::getDisplay()->croppedDraw(_WORLD_MAP, 0, 0, 120 - (32-pos), 0, (32-pos), 56, 120, 56);
+    croppedDraw(_WORLD_MAP, 32-pos, 0, 0, 0, 64 - (32-pos), 56, 120, 56);
+    croppedDraw(_WORLD_MAP, 0, 0, 120 - (32-pos), 0, (32-pos), 56, 120, 56);
   }
 
-  Locator::getDisplay()->drawVLine(32, 0, 64, 0xf000);
+  Locator::getDisplay()->drawFastVLine(32, 0, 64, 0xf000);
   lastHour = h;
+}
+
+
+void Clockface::croppedDraw(const unsigned short* image_array, int x, int y, int anchorX, int anchorY, int cropX, int cropY, int w, int h)
+{  
+  int anchor = anchorX;
+  for (int yy = anchorY; yy < cropY; yy++)
+  {    
+    for (int xx = 0; xx < cropX; xx++)
+    {
+      if (image_array[anchor] != MASK) {
+        Locator::getDisplay()->drawPixel(xx + x , yy + y, image_array[anchor]);
+      }
+
+      anchor++;
+    }
+    anchor = anchor + (w - cropX);
+  }
 }

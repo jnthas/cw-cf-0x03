@@ -1,15 +1,13 @@
-#ifndef WorldClockClockFace_h
-#define WorldClockClockFace_h
+#pragma once
 
 #include <Arduino.h>
 
-#include <Display.h>
+#include <Adafruit_GFX.h>
 #include <Tile.h>
 #include <Locator.h>
 #include <Game.h>
 #include <Object.h>
 #include <ImageUtils.h>
-#include <Scroll.h>
 #include <ColorUtil.h>
 
 #include "IClockface.h"
@@ -20,16 +18,13 @@
 
 class Clockface: public IClockface {
   private:
-    Display* _display;
-    DateTime* _dateTime;
-
+    Adafruit_GFX* _display;
+    CWDateTime* _dateTime;
     void updateMap();
+    void croppedDraw(const unsigned short* image_array, int x, int y, int anchorX, int anchorY, int cropX, int cropY, int w, int h);
     
-
   public:
-    Clockface(Display* display);
-    void setup(DateTime *dateTime);
+    Clockface(Adafruit_GFX* display);
+    void setup(CWDateTime *dateTime);
     void update();
 };
-
-#endif
